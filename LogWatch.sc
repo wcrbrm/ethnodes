@@ -39,6 +39,9 @@ object RolledBackHeaders extends ImportAction (
 val actions:List[ImportAction] = List(ImportBlockHeaders, ImportBlockReceipts, ImportStateEntries, RolledBackHeaders)
 
 
+val lastFlushTime: Int = 0
+// TODO: load lastFlushTime from the file
+
 val _DATA = new HashMap[Long, Map[String,Long]]()
 def combine(oldValue: Long, newValue: Long, func: String) = {
   if (func == "max") {
@@ -61,7 +64,7 @@ def add(unixTime: Long, path: String, value: Long, func: String) = {
 }
 
 // in loop:
-val line: String = read.lines(wd / 'rinkeby / "docker.log").head
+val line: String = read.lines(wd / instanceName / "docker.log").head
 read.lines(wd / 'rinkeby / "docker.log").foreach(line => {
   val patternDate(d, m, hi) = line
   val isoDate = y + "-" + m + "-" + d + " " + hi + ":00"
@@ -78,9 +81,13 @@ read.lines(wd / 'rinkeby / "docker.log").foreach(line => {
     val path = a.path
     val expected: List[Param] = a.aggregated
     val paramSeq: Seq[String] = patternParams.findAllMatchIn(eventline).map(_.toString).toSeq 
-    // paramSeq.foreach( // split, and check if key is expected, if expected, then write into _DATA
-  })
 
+    // paramSeq.foreach( // split, and check if key is expected, if expected, then write into _DATA
+    // TODO: foreach param: add(unixTime, a.path + "." + param.field, value=, func= param.func)
+  })
 })
 
+// TODO: DATA can be saved into output
+// TODO: flush all DATA (use AMPQ batches)
+// TODO: save lastFlushTime
 
