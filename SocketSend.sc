@@ -10,22 +10,15 @@ def sendPlainData(metricPath: String, tm: Long, value: String) {
 }
 
 case class DataChunk(metricPath: String, timestamp: Long, value: String) {
-  def asString:String = s"""("${metricpath}", (${timestamp}, ${value}))"""
+  def asString:String = s"${metricPath} ${value} ${timestamp}"
 }
 def sendData(chunks: List[DataChunk]) {
-  val conn = new java.net.Socket("localhost", 2004)
+  val conn = new java.net.Socket("localhost", 2003)
   val out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(conn.getOutputStream)))
   val in = new BufferedReader(new InputStreamReader(conn.getInputStream))
-
-  val payload: String = "[" + chunks.map(_.asString).mkString(",") + "]"
-  println(payload)
-  val len:Int = payload.length
-  println(len)
-  out.write(Array[Char]((len & 0xFF).toChar, (len >> 8).toChar, 0, 0))
-  out.write(payload)
+  println(chunks.map(_.asString).mkString("\n") + "\n")
+  out.write(chunks.map(_.asString).mkString("\n") + "\n")
   out.flush
-
-  Stream.continually(in.readLine()).takeWhile(_ != -1).map(println)
   conn.close
 }
 
